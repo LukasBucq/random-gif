@@ -10,10 +10,28 @@ enum Direction {
 class Snake {
   posX: number;
   posY: number;
+  color: string;
 
   constructor(posX: number, posY: number){
     this.posX = posX;
     this.posY = posY;
+    this.getBasicColor();
+  }
+
+  changeColor(newColor: string){
+    this.color = newColor;
+  }
+
+  generateRandomColor(){
+    let r,g,b;
+    r = Math.random()* (255 - 0) + 0; 
+    g = Math.random()* (255 - 0) + 0;
+    b = Math.random()* (255 - 0) + 0;
+    this.color = `rgb(${r}, ${g}, ${b})`;
+  }
+
+  getBasicColor(){
+    this.color = `rgb(${255}, ${0}, ${0})`;
   }
 }
 
@@ -57,6 +75,7 @@ export class SnakeComponent implements AfterViewInit {
   private snake: Snake[] = [];
   private key;
   private gameInterval: number = 480;
+  private randomSnakeColors : boolean = false;
 
   ngOnInit() {
   }
@@ -67,16 +86,14 @@ export class SnakeComponent implements AfterViewInit {
     this.context = this.snakeCanvas.nativeElement.getContext('2d');
     this.context.font = "30px Arial";
    
-    this.snake.push(new Snake(185, 20)); // pos:3
-    this.snake.push(new Snake(130,20));  // pos:2
-    this.snake.push(new Snake(75, 20));  // pos:1
-    this.snake.push(new Snake(20,20));   // pos:0
+    // setup snake parts
+    this.resetAll();
 
     this.id = setInterval(() => {    
       this.updatePosition(this.snake, this.currentDirection);  
       this.draw();
       
-    }, this.gameInterval); //interval timer
+    }, this.gameInterval); //interval timer, gameloop
   }
 
   //TODO
@@ -89,6 +106,7 @@ export class SnakeComponent implements AfterViewInit {
 
     this.snake.forEach(element => {
       this.context.beginPath();
+      this.context.fillStyle = element.color;
       this.context.fillRect(element.posX, element.posY,50,50);
       this.context.stroke();
     })
@@ -122,6 +140,12 @@ export class SnakeComponent implements AfterViewInit {
     lastPosY = this.snake[this.snake.length -1].posY;
 
     this.snake.push(new Snake(lastPosX, lastPosY));
+    if (this.randomSnakeColors) {
+      this.snake[this.snake.length -1].generateRandomColor();
+    }
+    else{
+      this.snake[this.snake.length -1].getBasicColor();
+    }  
   }
 
   clearCanvas(){
@@ -141,5 +165,28 @@ export class SnakeComponent implements AfterViewInit {
     this.snake.push(new Snake(20,20));   // pos:0
 
     this.currentDirection = Direction.Right;
+    this.snake[0].changeColor("#03fc20");
+  }
+
+  toggleSnakeColors(){
+    // Change boolean value to opposite
+    this.randomSnakeColors = !this.randomSnakeColors;
+
+    if(!this.randomSnakeColors){
+      for(let i = 0; i < this.snake.length; i++){
+        if(i == 0){
+          // Snake head is green
+          this.snake[i].changeColor("#03fc20")
+        }
+        else{
+          this.snake[i].getBasicColor();
+        }    
+      }
+    }
+    else{
+      for(let i = 0; i < this.snake.length; i++){
+        this.snake[i].generateRandomColor();
+      }     
+    }
   }
 }
