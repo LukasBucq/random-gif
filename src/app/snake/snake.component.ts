@@ -35,6 +35,12 @@ class Snake {
   }
 }
 
+class Food {
+  posX: number;
+  posY: number;
+  color: string;
+}
+
 @Component({
   selector: 'app-snake',
   templateUrl: './snake.component.html',
@@ -76,6 +82,10 @@ export class SnakeComponent implements AfterViewInit {
   private key;
   private gameInterval: number = 480;
   private randomSnakeColors : boolean = false;
+  private movementAmount: number = 55;
+
+  private foodSpawned: boolean = false;
+  private snakeFood: Food = new Food;
 
   ngOnInit() {
   }
@@ -90,9 +100,10 @@ export class SnakeComponent implements AfterViewInit {
     this.resetAll();
 
     this.id = setInterval(() => {    
-      this.updatePosition(this.snake, this.currentDirection);  
+      this.updatePosition(this.snake, this.currentDirection);
+
       this.draw();
-      
+      this.checkCollision();
     }, this.gameInterval); //interval timer, gameloop
   }
 
@@ -103,6 +114,7 @@ export class SnakeComponent implements AfterViewInit {
 
   draw(){
     this.clearCanvas();
+    this.spawnFood();
 
     this.snake.forEach(element => {
       this.context.beginPath();
@@ -110,6 +122,13 @@ export class SnakeComponent implements AfterViewInit {
       this.context.fillRect(element.posX, element.posY,50,50);
       this.context.stroke();
     })
+
+    if (this.foodSpawned) {
+      this.context.beginPath();
+      this.context.fillStyle = this.snakeFood.color;
+      this.context.fillRect(this.snakeFood.posX, this.snakeFood.posY,50,50);
+      this.context.stroke();
+    }
   }
 
   updatePosition(mySnake: Snake[], direction: Direction){
@@ -121,16 +140,16 @@ export class SnakeComponent implements AfterViewInit {
 
     switch(direction){
       case Direction.Down:
-        mySnake[0].posY = mySnake[0].posY + 55;
+        mySnake[0].posY = mySnake[0].posY + this.movementAmount;
         break;
       case Direction.Left:
-        mySnake[0].posX = mySnake[0].posX - 55;
+        mySnake[0].posX = mySnake[0].posX - this.movementAmount;
         break;
       case Direction.Right:
-        mySnake[0].posX = mySnake[0].posX + 55;
+        mySnake[0].posX = mySnake[0].posX + this.movementAmount;
         break;
       case Direction.Up:
-        mySnake[0].posY = mySnake[0].posY - 55;
+        mySnake[0].posY = mySnake[0].posY - this.movementAmount;
     }
   }
 
@@ -187,6 +206,47 @@ export class SnakeComponent implements AfterViewInit {
       for(let i = 0; i < this.snake.length; i++){
         this.snake[i].generateRandomColor();
       }     
+    }
+  }
+
+  spawnFood(){
+    if (!this.foodSpawned) {    
+      this.snakeFood.posX = Math.random()* (this.context.canvas.width - 0) + 0;
+      this.snakeFood.posY = Math.random()* (this.context.canvas.height - 0) + 0;
+      this.snakeFood.color = `rgb(${255}, ${0}, ${0})`;
+
+      this.foodSpawned = true;
+    }
+  }
+
+  checkCollision(){
+    // console.log("Snake xpos: " + this.snake[0].posX);
+    // console.log("Food xpos: " + this.snakeFood.posX);
+
+    // TODO: Check if going left or right
+
+    switch (this.currentDirection) {
+      case Direction.Right:
+        if (((this.snake[0].posX + 50) >= this.snakeFood.posX && (this.snake[0].posX + 50) <= (this.snakeFood.posX + 50)) && ((this.snake[0].posY >= this.snakeFood.posY && this.snake[0].posY <= this.snakeFood.posY + 50) || ((this.snake[0].posY + 50) >= this.snakeFood.posY && (this.snake[0].posY + 50) <= this.snakeFood.posY + 50))) {
+          console.log("Collision with snakefood Right");
+        }
+        break;
+      case Direction.Left:
+        if ((this.snake[0].posX >= this.snakeFood.posX && this.snake[0].posX <= (this.snakeFood.posX + 50)) && ((this.snake[0].posY >= this.snakeFood.posY && this.snake[0].posY <= this.snakeFood.posY + 50) || ((this.snake[0].posY + 50) >= this.snakeFood.posY && (this.snake[0].posY + 50) <= this.snakeFood.posY + 50))) {
+          console.log("Collision with snakefood Right");
+        }
+        break;
+      case Direction.Up:
+
+        break;
+      case Direction.Down:
+        if ( ((this.snake[0].posY + 50) >= this.snakeFood.posY && (this.snake[0].posY + 50) <= this.snakeFood.posY + 50)) {
+          //  ((this.snake[0].posX + 50) >= this.snakeFood.posX && (this.snake[0].posX + 50) <= (this.snakeFood.posX + 50)) &&
+          console.log("Collision with snakefood down");
+        }
+        break;
+      default:
+        break;
     }
   }
 }
