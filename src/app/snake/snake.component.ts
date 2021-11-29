@@ -83,6 +83,7 @@ export class SnakeComponent implements AfterViewInit {
   private gameInterval: number = 480;
   private randomSnakeColors : boolean = false;
   private movementAmount: number = 55;
+  private gameReset: boolean = true;
 
   private foodSpawned: boolean = false;
   private snakeFood: Food = new Food;
@@ -99,8 +100,13 @@ export class SnakeComponent implements AfterViewInit {
     // setup snake parts
     this.resetAll();
 
-    this.id = setInterval(() => {    
-      this.updatePosition(this.snake, this.currentDirection);
+    this.id = setInterval(() => {   
+      // Game loop 
+
+      if (!this.gameReset) {
+        this.updatePosition(this.snake, this.currentDirection);        
+      }
+      this.gameReset = false;
 
       this.draw();
       this.checkCollision();
@@ -178,13 +184,15 @@ export class SnakeComponent implements AfterViewInit {
 
   resetAll(){
     this.snake = [];
-    this.snake.push(new Snake(185, 20)); // pos:3
-    this.snake.push(new Snake(130,20));  // pos:2
-    this.snake.push(new Snake(75, 20));  // pos:1
-    this.snake.push(new Snake(20,20));   // pos:0
+    this.snake.push(new Snake(170, 5)); // pos:3
+    this.snake.push(new Snake(115, 5));  // pos:2 
+    this.snake.push(new Snake(60, 5));  // pos:1 
+    this.snake.push(new Snake(5, 5));   // pos:0 
 
     this.currentDirection = Direction.Right;
     this.snake[0].changeColor("#03fc20");
+
+    this.gameReset = true;
   }
 
   toggleSnakeColors(){
@@ -210,9 +218,12 @@ export class SnakeComponent implements AfterViewInit {
   }
 
   spawnFood(){
-    if (!this.foodSpawned) {    
-      this.snakeFood.posX = Math.random()* (this.context.canvas.width - 0) + 0;
-      this.snakeFood.posY = Math.random()* (this.context.canvas.height - 0) + 0;
+    if (!this.foodSpawned) {
+      let canvasWidth: number = Math.floor(this.context.canvas.width / 55);
+      let canvasHeight: number = Math.floor(this.context.canvas.height / 55);
+      
+      this.snakeFood.posX = Math.floor(Math.random()*canvasWidth)*55 + 5;
+      this.snakeFood.posY = Math.floor(Math.random()*canvasHeight)*55 + 5;
       this.snakeFood.color = `rgb(${255}, ${0}, ${0})`;
 
       this.foodSpawned = true;
